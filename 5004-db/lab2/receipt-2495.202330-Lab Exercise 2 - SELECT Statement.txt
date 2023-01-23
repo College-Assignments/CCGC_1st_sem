@@ -1,0 +1,7 @@
+Your submission was successful!
+Course: 2495.202330, Databases - CCGC-5004-0NB
+Assessment: Lab Exercise 2 - SELECT Statement
+
+Submission date: 1/23/23, 2:17 AM
+Submitter: Suraj Mandal
+Confirmation number: 2db367fe85c54eda8e4c42f607cb7d54
