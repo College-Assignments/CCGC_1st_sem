@@ -1,3 +1,30 @@
+"""
+Application Name: surajmandal.py
+Author/Developer: Suraj Mandal
+Date: 2023-01-24
+
+This code is a simple command-line application that allows the user to perform basic student management tasks.
+The user is presented with a menu of options including adding a student, displaying all students, searching for
+a student by ID, and ending the application.
+
+The code defines several functions to handle each of these tasks.
+
+These are helper functions:
+- The menu_prompt() function displays the menu of options and prompts the user to enter their choice.
+- The validate_id() function checks that the student ID entered is in the correct format (starts with "N0" and is 9 characters long, with the digits after the first character).
+
+
+These functions are the main functions:
+- The add_student_prompt() function prompts the user for the student's first name, last name, ID, and program name.
+- The add_student() function uses the information provided by the user to create a new student and add it to the list of students.
+- The display_students() function prints a list of all students in the system.
+- The search_student() function searches the list of students for a student with a given ID and prints their information if found.
+
+The code also includes a global variable, students, which stores the list of students.
+The main program loop repeatedly calls the menu_prompt() function and performs the appropriate action based on the user's choice.
+The program exits when the user chooses to end the application.
+"""
+
 import os
 
 # Prompts
@@ -48,13 +75,17 @@ def add_student():
     try:
         validate_id(id)
         students.append([id, firstname, lastnmame, program_name])
+        print("Student has been added to the record")
     except Exception as exp:
-        print(exp)
+        # print(exp)
         print("Not a valid student ID")
         return False
 
 
 def display_students():
+    if not students:
+        print("No students registered")
+        return
     print("%120s" % ("Suraj Mandal"))
     print("%120s" % ("N01537188\n"))
     print("-" * 120)
@@ -105,6 +136,6 @@ if __name__ == "__main__":
             break
         else:
             print("Invalid input, please enter a number between 1 and 4")
-            continue
-        # Exit the program
+            break
+        # Exit the program gracefully
         exit()
