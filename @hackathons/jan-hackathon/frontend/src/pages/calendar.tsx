@@ -1,6 +1,11 @@
-import { Heading, Input } from '@chakra-ui/react';
+import 'react-calendar/dist/Calendar.css';
 
-function calendar() {
+import { Heading, Input } from '@chakra-ui/react';
+import { useState } from 'react';
+import Calendar from 'react-calendar';
+
+function CalendarFC() {
+  const [date, onChange] = useState(new Date());
   return (
     <div
       style={{
@@ -13,12 +18,12 @@ function calendar() {
         alignItems: 'center',
         margin: '1rem',
         minHeight: '96vh',
+        background: '#fefefe',
         boxShadow: '4px 4px 6px 0px #dedede',
       }}
     >
       <Heading
         style={{
-          fontFamily: 'inter',
           fontWeight: 700,
           fontSize: '2rem',
         }}
@@ -34,7 +39,7 @@ function calendar() {
           border: '2px solid #dedede',
           borderRadius: '0.8rem',
         }}
-        placeholder="Search certian symptoms"
+        placeholder="Search symptoms in calander"
       ></Input>
 
       <div
@@ -50,8 +55,11 @@ function calendar() {
           <u>Calendar</u>
         </a>
       </div>
+
+      <br />
+      <Calendar onChange={onChange} value={date} />
     </div>
   );
 }
 
-export default calendar;
+export default CalendarFC;

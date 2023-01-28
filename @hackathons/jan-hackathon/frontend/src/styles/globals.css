@@ -105,3 +105,15 @@ a {
     color-scheme: dark;
   }
 }
+
+
+
+/* Custom */
+
+.react-calendar{
+  border: 1px solid #ebebeb !important;
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 100% !important;
+  height: 400px !important;
+}

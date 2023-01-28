@@ -13,6 +13,7 @@ function Home() {
         alignItems: 'center',
         margin: '1rem',
         minHeight: '96vh',
+        background: '#fefefe',
         boxShadow: '4px 4px 6px 0px #dedede',
       }}
     >
@@ -21,6 +22,7 @@ function Home() {
           fontFamily: 'inter',
           fontWeight: 700,
           fontSize: '2rem',
+          marginTop: '1rem',
         }}
       >
         Symptom Tracker
