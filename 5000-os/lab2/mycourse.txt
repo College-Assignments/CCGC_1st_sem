@@ -1,5 +1,6 @@
 I am studying in Humber's north campus
-Humber College, North Campus is in Toronto Humber offers various programs from each school
+Humber College, North Campus is in Toronto
+Humber offers various programs from each school
 My school at Humber is FAST
 FAST refers to Faculty of Applied Sciences and Technology
 HUMBER
@@ -7,4 +8,5 @@ FAST offers my program at Humber
 My program is at Humber's North campus.
 Other Humber campuses are Lakeshore and Carrier Drive
 Humber
-HUMBER. humber
+HUMBER.
+humber
