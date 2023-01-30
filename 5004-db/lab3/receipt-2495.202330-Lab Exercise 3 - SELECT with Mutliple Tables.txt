@@ -1,0 +1,7 @@
+Your submission was successful!
+Course: 2495.202330, Databases - CCGC-5004-0NB
+Assessment: Lab Exercise 3 - SELECT with Mutliple Tables
+
+Submission date: 1/28/23, 12:43 AM
+Submitter: Suraj Mandal
+Confirmation number: 6faf6539d53a4211af1f0eda841ed601

@@ -4,16 +4,16 @@ function Home() {
   return (
     <div
       style={{
-        padding: '1.5rem',
-        border: '2px solid #E2E8F0',
-        borderRadius: '2rem',
+        margin: '1rem',
         width: '600px',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        margin: '1rem',
         minHeight: '96vh',
+        padding: '1.5rem',
+        alignItems: 'center',
+        borderRadius: '2rem',
         background: '#fefefe',
+        flexDirection: 'column',
+        border: '2px solid #E2E8F0',
         boxShadow: '4px 4px 6px 0px #dedede',
       }}
     >
