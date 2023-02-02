@@ -39,10 +39,10 @@ def menu_menu_prompt():
 
 
 def add_item_prompt():
-    name = input("Enter name of the item: ")
-    serial_code = input("Enter serial code of the item: ")
-    quantity = input("Enter quantity of the item: ")
-    ppu = input("Enter price per unit of the item: ")
+    name = input("\tEnter name of the item: ")
+    serial_code = input("\tEnter serial code of the item: ")
+    quantity = int(input("\tEnter quantity of the item: "))
+    ppu = float(input("\tEnter price per unit of the item: "))
     return name, serial_code, quantity, ppu
 
 
@@ -59,46 +59,62 @@ def add_item(items):
             "quantity": quantity,
             "ppu": ppu,
         }
-    print(f"{name} has been added to the record")
+    print(f"\n\t{name} has been added to the record ")
     return items
 
 
 def display_items(items):
     if not items:
-        print("There are no items in inventory...")
+        print("\tThere are no items in inventory...")
         return
-    print("%120s" % ("Suraj Mandal"))
-    print("%120s" % ("N01537188\n"))
-    print("-" * 120)
-    print("%30s%30s%30s%30s" % ("Name", "Serial Code", "Quantity", "Price per unit"))
+    print("\n")
+    print("-" * 110)
+    print("%110s" % ("Suraj Mandal"))
+    print("%110s" % ("N01537188\n"))
+    print("-" * 110)
+    print("%20s%30s%30s%30s" % ("Name", "Serial Code", "Quantity", "Price per unit"))
     for item in items:
         print(
-            "%30s%30s%30s%30s"
-            % (items[item]["name"], item, items[item]["quantity"], items[item]["ppu"])
+            "%20s%30s%30s%30s"
+            % (
+                items[item]["name"],
+                item,
+                items[item]["quantity"],
+                "$" + str(items[item]["ppu"]),
+            )
         )
-    print("-" * 120)
+    print("-" * 110)
     print("\n")
 
 
 def search_items(items):
     if len(items) == 0:
-        print("No items in inventory...")
-    item_id = input("Enter Item ID: ")
+        print("\tNo items in inventory...")
+        return
+    item_id = input("\tEnter Item ID: ")
     for item in items:
-        if item.serial_code == item_id:
-            print("%120s" % ("Suraj Mandal"))
-            print("%120s" % ("N01537188\n"))
-            print("-" * 120)
+        if item == item_id:
+            print("\n")
+            print("-" * 110)
+            print("%110s" % ("Suraj Mandal"))
+            print("%110s" % ("N01537188"))
+            print("\n")
+            print("-" * 110)
             print(
-                "%30s%30s%30s%30s"
-                % ("Name", "Serial Code", "Quantity", "Price per unit\n")
+                "%20s%30s%30s%30s"
+                % ("Name", "Serial Code", "Quantity", "Price per unit")
             )
             print(
-                "%30s%30s%30s%30s"
-                % (item.name, item.serial_code, item.quantity, item.ppu)
+                "%20s%30s%30s%30s"
+                % (
+                    items[item]["name"],
+                    item,
+                    items[item]["quantity"],
+                    "$" + str(items[item]["ppu"]),
+                )
             )
             return True
-    print("Item not found..")
+    print("\tItem not found..")
     return False
 
 
@@ -107,11 +123,10 @@ def main():
     while True:
         choice = menu_menu_prompt()
         if choice.isdigit() is False:
-            print("Invalid input, please enter a number")
+            print("\tInvalid input, please enter a number")
             continue
         elif int(choice) == 1:
             items = add_item(items)
-            pp(items)
             continue
         elif int(choice) == 2:
             display_items(items)
@@ -122,10 +137,10 @@ def main():
         elif int(choice) == 4:
             break
         else:
-            print("Enter a valid choice...")
+            print("\tEnter a valid choice...")
             continue
 
 
 if __name__ == "__main__":
-    os.system("clear")
+    # os.system("clear")
     main()
