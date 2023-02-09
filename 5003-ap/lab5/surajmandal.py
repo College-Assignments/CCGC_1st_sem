@@ -14,7 +14,7 @@ end_application() - Gracefully exit the application
 
 The utility functions are as follows:
 read_file() - Read the file and return a list of items
-write_file() - Write the data to the file
+write_file() - Write the data to the file`
 
 The prompt functions are as follows:
 menu_prompt() - Display the main menu and take user input
