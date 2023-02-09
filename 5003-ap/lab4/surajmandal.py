@@ -96,18 +96,24 @@ def add_item():
     # Add an item to the inventory
     data = read_file()
     name, serial_code, quantity, ppu = add_item_prompt()
-    data[serial_code] = {
-        "name": name,
-        "quantity": quantity,
-        "ppu": ppu,
-    }
+    if serial_code in data:
+        data[serial_code]["quantity"] += quantity
+        if ppu >= data[serial_code]["ppu"]:
+            data[serial_code]["ppu"] = ppu
+    else:
+        data[serial_code] = {
+            "name": name,
+            "quantity": quantity,
+            "ppu": ppu,
+        }
+    print(f"\n\t{name} has been added to the record ")
     write_file(data)
 
 
 def display_items():
     # Display
     data = read_file()
-    if data.__len__ == 0:
+    if data.__len__() == 0:
         print("Inventory does not have any item to display...")
         return
 
