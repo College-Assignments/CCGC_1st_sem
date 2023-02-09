@@ -42,7 +42,7 @@ def menu_prompt():
         | 1. Add inventory items                                        |
         | 2. Display all inventory items                                |
         | 3. Search an item                                             |
-        | 4. Sales invoice    ------- To be implimented in the next lab |
+        | 4. Sales invoice |
         | 5. End application                                            |
         |---------------------------------------------------------------|
         """
@@ -61,6 +61,10 @@ def add_item_prompt():
     quantity = int(input("\tEnter inventory item quantity: "))
     ppu = float(input("\tEnter inventory item price per unit: "))
     return name, serial_code, quantity, ppu
+
+def sales_invoice_prompt():
+    # Menu prompt to add an item to the sales invoice
+    
 
 
 # ------------------|
