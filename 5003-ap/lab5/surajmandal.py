@@ -62,9 +62,11 @@ def add_item_prompt():
     ppu = float(input("\tEnter inventory item price per unit: "))
     return name, serial_code, quantity, ppu
 
+
 def sales_invoice_prompt():
     # Menu prompt to add an item to the sales invoice
-    
+
+    pass
 
 
 # ------------------|
