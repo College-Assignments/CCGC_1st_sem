@@ -1,9 +1,16 @@
 """
 Application Name: surajmandal.py
 Author/Developer: Suraj Mandal
-Date: 2023-02-06
+Date: 2023-02-14
 
 This is a simple inventory management application using  file handling.
+
+The structure of the app is
+
+The prompt functions are as follows:
+menu_prompt() - Display the main menu and take user input
+add_item_prompt() - Menu prompt to add an item to the inventory
+sales_invoice_prompt() - Menu prompt to add an item to the sales invoice
 
 The main functions are as follows:
 add_item() - Add an item to the inventory
@@ -15,19 +22,26 @@ end_application() - Gracefully exit the application
 The utility functions are as follows:
 read_file() - Read the file and return a list of items
 write_file() - Write the data to the file`
-
-The prompt functions are as follows:
-menu_prompt() - Display the main menu and take user input
+send_mail() - Send inventory report to the user
 
 """
 
+from datetime import datetime
 import json
+import os
+
+from dotenv import load_dotenv
 
 # This is just for internal configuration
 # I like to do it this way
 config = {
-    "filename": "inventory.txt",
+    "inventory": "inventory.txt",
+    "invoice": "invoice.txt",
+    # Please paste your password in the .env file
+    "mailfrom": "cruelplatypus67@gmail.com",
+    "mailto": "me@surajmandal.in",
 }
+
 
 # -----------------|
 #  Prompt functions|
@@ -42,7 +56,7 @@ def menu_prompt():
         | 1. Add inventory items                                        |
         | 2. Display all inventory items                                |
         | 3. Search an item                                             |
-        | 4. Sales invoice |
+        | 4. Sales invoice                                              |
         | 5. End application                                            |
         |---------------------------------------------------------------|
         """
@@ -65,34 +79,91 @@ def add_item_prompt():
 
 def sales_invoice_prompt():
     # Menu prompt to add an item to the sales invoice
-
-    pass
+    serial_code = input("\tEnter inventory item code: ")
+    quantity = int(input("\tEnter inventory item quantity: "))
+    return serial_code, quantity
 
 
 # ------------------|
 # Utility functions |
 # ------------------|
-def read_file(filename=config["filename"]):
+def read_file(default=[], file_name=config["inventory"]):
     # Read the file and return a list of items
     try:
-        with open(filename, "r") as file:
+        with open(file_name, "r") as file:
             file = file.readlines()
-            dct = json.loads(file[0])
+            if len(file) == 0:
+                return default
+            else:
+                dct = json.loads(file[0])
             return dct
-    except OSError as e:
+    except Exception as e:
         print(f"{e}")
+        return False
 
 
-def write_file(data, filename=config["filename"]):
+def write_file(data, file_name=config["inventory"]):
     # Write the data to the file
     try:
-        with open(filename, "w+") as file:
+        with open(file_name, "w+") as file:
             clean = json.dumps(data)
             file.write(clean)
             return True
-    except OSError as e:
+    except Exception as e:
         print(f"{e}")
         return False
+
+
+def send_mail():
+    # Send inventory report to the user
+    data = read_file(file_name=config["invoice"])
+    email_invoice_list = ""
+    for item in data["list"]:
+        email_invoice_list += "%22s%22s%22s%22s%22s\n" % (
+            item["name"],
+            item["name"],
+            item["serial_code"],
+            item["quantity"],
+            item["ppu"],
+        )
+    email_text = f"""\n
+    {"-" * 110}
+    {("%110s" % ("Suraj Mandal"))}
+    {"%110s" % ("N01537188")}\n
+    {("-" * 110)}
+    {("%22s%22s%22s%22s%22s" % ("Sale Time", "Name", "ID","Quantity", "Price Per Unit"))}
+    {email_invoice_list}
+    {("-" * 110)}
+    \n
+    """
+    email = {
+        "data": email_text,
+        "password": os.environ["APP_PASSWORD"],
+        "from": config["mailfrom"],
+        "to": config["mailto"],
+    }
+
+    import ssl
+    import smtplib
+
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
+        smtp.login(email["from"], email["password"])
+        smtp.sendmail(email["from"], email["to"], email["data"])
+
+    return True
+
+
+def gen_invoice(selected_item, serial_code, quantity):
+    # Not necessary but I like to keep it separate
+    return {
+        "time": datetime.now().isoformat(),
+        "name": selected_item["name"],
+        "serial_code": serial_code,
+        "quantity": quantity,
+        "ppu": selected_item["ppu"],
+    }
 
 
 # --------------------------------|
@@ -180,7 +251,40 @@ def search_items():
 
 def sales_invoice():
     # Sales invoice function, to be implimented in the next lab
-    pass
+    serial_code, quantity = sales_invoice_prompt()
+
+    inventory = read_file()
+    invoice = read_file(file_name=config["invoice"])
+
+    selected_item = None
+    write_invoice = invoice
+    write_inventory = inventory
+
+    for item in inventory:
+        if item == serial_code:
+            selected_item = inventory[item]
+            gi = gen_invoice(selected_item, serial_code, quantity)
+            # Check if the quantity is available
+            if selected_item["quantity"] < quantity:
+                print("Not enough quantity available..")
+                return False
+            elif selected_item["quantity"] == quantity:
+                write_inventory.pop(item)
+                write_invoice["list"].append(gi)
+            else:
+                write_inventory[item]["quantity"] -= quantity
+                write_invoice["list"].append(gi)
+
+    if selected_item is None:
+        print("Item is not in inventory..")
+        return False
+
+    # Write to the file
+    write_file(write_invoice, config["invoice"])
+    write_file(write_inventory, config["inventory"])
+
+    # Send mail to the customer
+    send_mail()
 
 
 def end_application():
@@ -192,6 +296,7 @@ def end_application():
 # Main function, this is the entry point of the program |
 # ------------------------------------------------------|
 def main():
+    load_dotenv()
     while True:
         choice = menu_prompt()
         if choice.isdigit() is False:
