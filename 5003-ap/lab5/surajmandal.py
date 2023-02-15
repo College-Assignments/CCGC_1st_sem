@@ -24,6 +24,10 @@ read_file() - Read the file and return a list of items
 write_file() - Write the data to the file`
 send_mail() - Send inventory report to the user
 
+IMPORTANT!
+Create a .env file in the same directory as this file and add the following line
+APP_PASSWORD=<your google app password>
+
 """
 
 from datetime import datetime
@@ -37,8 +41,7 @@ from dotenv import load_dotenv
 config = {
     "inventory": "inventory.txt",
     "invoice": "invoice.txt",
-    # Please paste your password in the .env file
-    "mailfrom": "cruelplatypus67@gmail.com",
+    "mailfrom": "cruelplatypus67@gmail.com",  # APP_PASSWORD must be for this email
     "mailto": "me@surajmandal.in",
 }
 
@@ -114,26 +117,28 @@ def write_file(data, file_name=config["inventory"]):
         return False
 
 
+def ca_spaces(_str, length=22):
+    # ca = calculate & append _spaces
+    if len(str(_str)) >= length:
+        return _str
+    return str("&nbsp;" * (length - len(str(_str)))) + str(_str)
+
+
 def send_mail():
     # Send inventory report to the user
     data = read_file(file_name=config["invoice"])
     email_invoice_list = ""
     for item in data["list"]:
-        email_invoice_list += "%22s%22s%22s%22s%22s\n" % (
-            item["name"],
-            item["name"],
-            item["serial_code"],
-            item["quantity"],
-            item["ppu"],
-        )
-    email_text = f"""\n
+        email_invoice_list += f"""{ca_spaces(item["time"], 36)}{ca_spaces(item["name"])}{ca_spaces(item["serial_code"], 8)}{ca_spaces(item["quantity"])}{ca_spaces(item["ppu"])}\n    """
+    email_text = f"""<pre>\n
     {"-" * 110}
-    {("%110s" % ("Suraj Mandal"))}
-    {"%110s" % ("N01537188")}\n
+    {ca_spaces("Suraj Mandal", 110)}
+    {ca_spaces("N01537188", 110)}
     {("-" * 110)}
-    {("%22s%22s%22s%22s%22s" % ("Sale Time", "Name", "ID","Quantity", "Price Per Unit"))}
+    {(ca_spaces("Sale Time", 36)+ca_spaces("Name")+ca_spaces("ID", 8)+ca_spaces("Quantity")+ca_spaces("Price Per Unit"))}
     {email_invoice_list}
     {("-" * 110)}
+    </pre>
     \n
     """
     email = {
@@ -145,12 +150,17 @@ def send_mail():
 
     import ssl
     import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    msg = MIMEMultipart("alternative")
+    msg.attach(MIMEText(email_text, "html"))
 
     context = ssl.create_default_context()
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
         smtp.login(email["from"], email["password"])
-        smtp.sendmail(email["from"], email["to"], email["data"])
+        smtp.sendmail(email["from"], email["to"], msg.as_string())
 
     return True
 
@@ -279,12 +289,13 @@ def sales_invoice():
         print("Item is not in inventory..")
         return False
 
+    # Send mail to the customer
+    if send_mail() is False:
+        print("Error sending mail, transaction has been reverted...\n")
+        return False
     # Write to the file
     write_file(write_invoice, config["invoice"])
     write_file(write_inventory, config["inventory"])
-
-    # Send mail to the customer
-    send_mail()
 
 
 def end_application():

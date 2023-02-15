@@ -1,1 +1,1 @@
-{"APL": {"name": "Apple", "quantity": 40, "ppu": 1.5}, "BNN": {"name": "Banana", "quantity": 100, "ppu": 0.76}}
+{"APL": {"name": "Apple", "quantity": 15, "ppu": 1.5}, "BNN": {"name": "Banana", "quantity": 6, "ppu": 0.76}}
