@@ -76,7 +76,7 @@ def add_item_prompt():
     name = input("\tEnter inventory Item Name: ")
     serial_code = input("\tEnter inventory item code: ")
     quantity = int(input("\tEnter inventory item quantity: "))
-    ppu = float(input("\tEnter inventory item price per unit: "))
+    ppu = float(input("\tEnter inventory item price per unit: $"))
     return name, serial_code, quantity, ppu
 
 
@@ -117,19 +117,22 @@ def write_file(data, file_name=config["inventory"]):
         return False
 
 
-def ca_spaces(_str, length=22):
+def ca_spaces(_str, length=22, price=False):
     # ca = calculate & append _spaces
+    __str = str(_str)
+
     if len(str(_str)) >= length:
         return _str
-    return str("&nbsp;" * (length - len(str(_str)))) + str(_str)
+    if price:
+        return str("&nbsp;" * (length - len(__str) - 1)) + "$" + __str
+    return str("&nbsp;" * (length - len(__str))) + __str
 
 
-def send_mail():
+def send_mail(data):
     # Send inventory report to the user
-    data = read_file(file_name=config["invoice"])
     email_invoice_list = ""
     for item in data["list"]:
-        email_invoice_list += f"""{ca_spaces(item["time"], 36)}{ca_spaces(item["name"])}{ca_spaces(item["serial_code"], 8)}{ca_spaces(item["quantity"])}{ca_spaces(item["ppu"])}\n    """
+        email_invoice_list += f"""{ca_spaces(item["time"], 36)}{ca_spaces(item["name"])}{ca_spaces(item["serial_code"], 8)}{ca_spaces(item["quantity"])}{ca_spaces(item["ppu"], price=True)}\n    """
     email_text = f"""<pre>\n
     {"-" * 110}
     {ca_spaces("Suraj Mandal", 110)}
@@ -138,10 +141,16 @@ def send_mail():
     {(ca_spaces("Sale Time", 36)+ca_spaces("Name")+ca_spaces("ID", 8)+ca_spaces("Quantity")+ca_spaces("Price Per Unit"))}
     {email_invoice_list}
     {("-" * 110)}
+    {ca_spaces("Total price of all items purchased:", 70)+ca_spaces(round(data["total"]["total"], 2), length=30, price=True)}
+    {ca_spaces("Tax amount paid:", 70)+ca_spaces(round(data["total"]["tax"], 2), length=30, price=True)}
+    {ca_spaces("Total amount paid:", 70)+ca_spaces(round(data["total"]["grand_total"], 2), length=30, price=True)}
+    {("-" * 110)}
     </pre>
     \n
     """
+
     email = {
+        "subject": f"My Sales Invoice to {datetime.today().strftime('%B %d, %Y')}",
         "data": email_text,
         "password": os.environ["APP_PASSWORD"],
         "from": config["mailfrom"],
@@ -150,17 +159,19 @@ def send_mail():
 
     import ssl
     import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
+    from email.message import EmailMessage
 
-    msg = MIMEMultipart("alternative")
-    msg.attach(MIMEText(email_text, "html"))
+    msg = EmailMessage()
+    msg["Subject"] = email["subject"]
+    msg["From"] = email["from"]
+    msg["To"] = email["to"]
+    msg.set_content(email["data"], subtype="html")
 
     context = ssl.create_default_context()
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
         smtp.login(email["from"], email["password"])
-        smtp.sendmail(email["from"], email["to"], msg.as_string())
+        smtp.send_message(msg)
 
     return True
 
@@ -173,6 +184,17 @@ def gen_invoice(selected_item, serial_code, quantity):
         "serial_code": serial_code,
         "quantity": quantity,
         "ppu": selected_item["ppu"],
+    }
+
+
+def calc_total_tax_subtotal(list_of_items):
+    total = 0
+    for item in list_of_items:
+        total = total + (item["quantity"] * item["ppu"])
+    return {
+        "total": total,
+        "tax": round(total * 0.13, 2),
+        "grand_total": round(total * 1.13, 2),
     }
 
 
@@ -270,10 +292,12 @@ def sales_invoice():
     write_invoice = invoice
     write_inventory = inventory
 
-    for item in inventory:
+    for item in list(inventory):
         if item == serial_code:
             selected_item = inventory[item]
-            gi = gen_invoice(selected_item, serial_code, quantity)
+            gi = gen_invoice(
+                selected_item, serial_code, quantity
+            )  # This makes the code more readable below
             # Check if the quantity is available
             if selected_item["quantity"] < quantity:
                 print("Not enough quantity available..")
@@ -281,16 +305,19 @@ def sales_invoice():
             elif selected_item["quantity"] == quantity:
                 write_inventory.pop(item)
                 write_invoice["list"].append(gi)
+                write_invoice["total"] = calc_total_tax_subtotal(write_invoice["list"])
             else:
                 write_inventory[item]["quantity"] -= quantity
                 write_invoice["list"].append(gi)
+                write_invoice["total"] = calc_total_tax_subtotal(write_invoice["list"])
 
     if selected_item is None:
         print("Item is not in inventory..")
         return False
 
     # Send mail to the customer
-    if send_mail() is False:
+    print("Sending mail to the customer...")
+    if send_mail(write_invoice) is False:
         print("Error sending mail, transaction has been reverted...\n")
         return False
     # Write to the file
