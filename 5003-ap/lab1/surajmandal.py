@@ -70,7 +70,8 @@ vehicle_two_price = float(input(q_vehicle_two_price))
 
 
 # Calculate total inventory amount and tax
-total_inventory_amount = vehicle_one_price + vehicle_two_price
+total_inventory_amount = vehicle_one_quantity * vehicle_one_price
++(vehicle_two_quantity * vehicle_two_price)
 total_inventory_tax = total_inventory_amount * 0.13
 
 

@@ -1,1 +1,1 @@
-{"BNAN": {"name": "Banana", "quantity": 350, "ppu": 0.5}, "APL": {"name": "APPLE", "quantity": 200, "ppu": 2.0}}
+{"BNAN": {"name": "Banana", "quantity": 350, "ppu": 0.5}, "APL": {"name": "APPLE", "quantity": 200, "ppu": 2.0}, "CNN": {"name": "Coconut", "quantity": 200, "ppu": 0.95}, "TOM": {"name": "Tomato", "quantity": 100, "ppu": 1.5}}

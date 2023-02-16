@@ -59,7 +59,7 @@ def add_item_prompt():
     name = input("\tEnter inventory Item Name: ")
     serial_code = input("\tEnter inventory item code: ")
     quantity = int(input("\tEnter inventory item quantity: "))
-    ppu = float(input("\tEnter inventory item price per unit: "))
+    ppu = float(input("\tEnter inventory item price per unit: $"))
     return name, serial_code, quantity, ppu
 
 

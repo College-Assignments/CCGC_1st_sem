@@ -49,12 +49,8 @@ def add_student_prompt():
     return firstname, lastname, id, program_name
 
 
-# Global variables
-students = []
-
-
 # Helpers
-def validate_id(student_id):
+def validate_id(student_id, students):
     if len(student_id) != 9:
         raise Exception("Invalid ID Length")
     elif student_id[0] != "N":
@@ -70,10 +66,10 @@ def validate_id(student_id):
 
 
 # Main functions
-def add_student():
+def add_student(students):
     firstname, lastnmame, id, program_name = add_student_prompt()
     try:
-        validate_id(id)
+        validate_id(id, students=students)
         students.append([id, firstname, lastnmame, program_name])
         print("Student has been added to the record")
     except Exception as exp:
@@ -82,7 +78,7 @@ def add_student():
         return False
 
 
-def display_students():
+def display_students(students):
     if not students:
         print("No students registered")
         return
@@ -97,7 +93,7 @@ def display_students():
         print("%30s%30s%30s%30s" % (student[1], student[2], student[0], student[3]))
 
 
-def search_student():
+def search_student(students):
     if len(students) == 0:
         print("No students registered in the institution")
     student_id = input("Enter student ID: ")
@@ -111,31 +107,36 @@ def search_student():
                 % ("First Name", "Last Name", "Student ID", "Program Enrolled\n")
             )
             print("%30s%30s%30s%30s" % (student[1], student[2], student[0], student[3]))
+            print("-" * 120)
             return True
     print("Student not registered in the institution")
     return False
 
 
-if __name__ == "__main__":
-    os.system("clear")
+def main():
+    students = []
     while True:
         choice = menu_prompt()
         if choice.isdigit() is False:
             print("Invalid input, please enter a number")
             continue
         elif int(choice) == 1:
-            add_student()
+            add_student(students)
             continue
         elif int(choice) == 2:
-            display_students()
+            display_students(students)
             continue
         elif int(choice) == 3:
-            search_student()
+            search_student(students)
             continue
         elif int(choice) == 4:
             break
         else:
             print("Invalid input, please enter a number between 1 and 4")
             break
-        # Exit the program gracefully
-        exit()
+    exit()
+
+
+if __name__ == "__main__":
+    os.system("clear")
+    main()
