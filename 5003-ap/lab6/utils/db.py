@@ -1,3 +1,4 @@
+import atexit
 from mysql.connector import connect
 from dotenv import load_dotenv
 from pathlib import Path
@@ -9,19 +10,29 @@ class db:
         # load the .env file
         path = Path(__file__).parent.parent
         load_dotenv(dotenv_path=f"{path}/.env")
+        self.connect()
+        atexit.register(self.disconnect)
 
     def connect(self) -> None:
         try:
             self.mydb = connect(
-                host="127.0.0.1", user="root", password=os.environ.get("MYSQL_PASSWORD")
+                host="127.0.0.1",
+                user="root",
+                password=os.environ.get("MYSQL_PASSWORD"),
             )
-            self.cursor = self.mydb.cursor()
+            self.cursor = self.mydb.cursor(buffered=True)
+            self.cursor.execute("USE ap5003")
         except Exception as e:
             print(e)
-            self.cursor = None
 
     def disconnect(self) -> None:
-        self.mydb.close()
+        print("\n\n\n")
+        try:
+            self.cursor.close()
+            self.mydb.close()
+            self.mydb.disconnect()
+        except Exception as _e:
+            pass
 
     def get(
         self,
@@ -39,17 +50,29 @@ class db:
                 query += f" WHERE {where}"
             if sort is not None:
                 query += f" ORDER BY {sort}"
-        data = self.cursor.execute(query)
+        data = None
+        try:
+            self.cursor.execute(query)
+            data = self.cursor.fetchall()
+        except Exception as e:
+            # print("\n\t" + str(e))
+            return None
         return data
 
-    def set(self, key: str, value: str):
-        data = self.cursor.execute(f"INSERT INTO {key} VALUES ({value})")
-        return data
+    def set(self, table: str, keys: str, value: str):
+        self.cursor.execute(f"INSERT INTO {table} {keys} VALUES ({value})")
+        data = self.mydb.commit()
+        return True
 
     def delete(self, key: str):
-        data = self.cursor.execute(f"DELETE FROM {key}")
+        self.cursor.execute(f"DELETE FROM {key}")
+        data = self.cursor.fetchall()
         return data
 
-    def raw(self, query: str):
-        data = self.cursor.execute(query)
-        return data
+    def raw(self, queries: str):
+        queries = queries.split(";")
+        for query in queries:
+            if query.strip() == "":
+                continue
+            self.cursor.execute(query)
+            self.mydb.commit()

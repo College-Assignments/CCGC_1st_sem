@@ -1,30 +1,24 @@
-from utils.db import db
+import utils.db
 
 
-def migrate():
-    db.raw("CREATE DATABASE IF NOT EXISTS surajmandal")
-    db.raw("USE surajmandal")
-    db.raw(
-        """
+def migrate(instance: utils.db.db):
+    instance.raw(
+        queries="""
+        DROP DATABASE IF EXISTS ap5003;
+        CREATE DATABASE IF NOT EXISTS ap5003;
+        USE ap5003;
         CREATE TABLE student (
           student_id INT PRIMARY KEY AUTO_INCREMENT,
           first_name VARCHAR(50),
           last_name VARCHAR(50),
           email VARCHAR(100)
         );
-        """
-    )
-    db.raw(
-        """
         CREATE TABLE course (
           course_id INT PRIMARY KEY AUTO_INCREMENT,
           course_name VARCHAR(100),
-          course_code VARCHAR(50)
+          course_code VARCHAR(50),
+          course_credits INT
         );
-        """
-    )
-    db.raw(
-        """
         CREATE TABLE registration (
           registration_id INT AUTO_INCREMENT PRIMARY KEY,
           student_id INT NOT NULL,
