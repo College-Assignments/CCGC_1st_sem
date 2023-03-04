@@ -4,7 +4,8 @@ Author/Developer: Suraj Mandal
 Date: 2023-03-01
 
 IMPORTANT!
-Create a .env file in the same directory as this file and add the following line
+1. Use `pip install -r requirements.txt` (or `pip3`) to install the required packages
+2. Create a .env file in the same directory as this file and add the following line
 MYSQL_PASSWORD=<your_password_here>
 
 .
@@ -24,9 +25,10 @@ registration information respectively. The application makes use of basic SQL qu
 the database. The user inputs are validated before being processed by the system to ensure that only valid data is
 entered into the database.
 
-P.s: Longest program ever
+P.s: Longest program ever, also so many errors.
 """
 
+from pprint import pprint
 from migrations.create_tables import migrate
 from utils.text import ca_spaces
 import utils.db
@@ -62,13 +64,14 @@ def reg_std_prompt():
     student_id = input("\tEnter student ID: ")
     course_id = input("\tEnter course ID: ")
     enrollment_semester = int(input("\tEnter enrollment semester: "))
+    print("\n")
     return student_id, course_id, enrollment_semester
 
 
 def add_std_prompt():
-    first_name = input("Enter first name: \t")
-    last_name = input("Enter last name: \t")
-    email = input("Enter email: \t")
+    first_name = input("\tEnter first name: ")
+    last_name = input("\tEnter last name: ")
+    email = input("\tEnter email: ")
     return first_name, last_name, email
 
 
@@ -108,7 +111,7 @@ def display_courses(instance: utils.db.db):
         {ca_spaces(config['name'], 110)}
         {ca_spaces(config['nnumber'], 110)}
         {("-" * 110)}
-        {ca_spaces("Course Code", 40)}{ca_spaces("Course Title", 40)}{ca_spaces("Course Credits", 30)}
+        {ca_spaces("Course ID", 40)}{ca_spaces("Course Title", 40)}{ca_spaces("Course Credits", 30)}
         """
     )
     for course in data:
@@ -119,7 +122,9 @@ def display_courses(instance: utils.db.db):
 
 
 def display_registrations(instance: utils.db.db):
-    data = instance.get(table="registration")
+    data = instance.get(
+        raw_query="SELECT * FROM registration NATURAL JOIN student NATURAL JOIN course"
+    )
     if data is None or data.__len__() == 0:
         print("\tThere is no student registered in any course at the institution")
         return
@@ -129,29 +134,28 @@ def display_registrations(instance: utils.db.db):
         {ca_spaces(config['name'], 110)}
         {ca_spaces(config['nnumber'], 110)}
         {("-" * 110)}
-        {ca_spaces("First Name", 20)}{ca_spaces("Last Name", 20)}{ca_spaces("Student ID", 12)}{ca_spaces("Course Code", 20)}{ca_spaces("Course Title",20)}{ca_spaces("Semister Enrolled", 20)}
+        {ca_spaces("First Name", 18)}{ca_spaces("Last Name", 18)}{ca_spaces("Student ID", 16)}{ca_spaces("Course ID", 20)}{ca_spaces("Course Title",20)}{ca_spaces("Semister", 18)}
         """
     )
     for registration in data:
         print(
-            f"\t{ca_spaces(registration[0], 20)}{ca_spaces(registration[1], 20)}{ca_spaces(registration[2], 12)}{ca_spaces(registration[3], 20)}{ca_spaces(registration[4], 20)}{ca_spaces(registration[5], 20)}"
+            f"\t{ca_spaces(registration[4], 18)}{ca_spaces(registration[5], 18)}{ca_spaces(registration[1], 16)}{ca_spaces(registration[0], 20)}{ca_spaces(registration[7], 20)}{ca_spaces(registration[3], 18)}"
         )
-    print("\n\t" + ("-" * 110))
+    print("\t" + ("-" * 110))
 
 
 def register_student(instance: utils.db.db):
     # Registering student for a course
     student_id, course_id, enrollment_semester = reg_std_prompt()
-
-    # Checking if student exists
-    data = instance.get(table="student", where=f"student_id = {student_id}")
+    data = instance.get(
+        table="student", where=f"student_id = '{str(student_id).strip()}'"
+    )
     if data is None or data.__len__() == 0:
         print(
             f"\tStudent with student ID {student_id} does not exist - cannot register"
         )
         return
 
-    # Checking if course exists
     data = instance.get(table="course", where=f"course_id = {course_id}")
     if data is None or data.__len__() == 0:
         print(
@@ -159,52 +163,30 @@ def register_student(instance: utils.db.db):
         )
         return
 
-    # Checking if student is already registered
     data = instance.get(
         table="registration",
-        where=f"\tstudent_id = {student_id} AND course_id = {course_id} AND enrollment_semester = {enrollment_semester}",
+        where=f"\tstudent_id = '{student_id}' AND course_id = '{course_id}' AND enrollment_semester = {enrollment_semester}",
     )
-    print("data", data)
     if data:
         print(
-            f"\tStudent is already registered in course {course_id} for this semester"
+            f"\tStudent is already registered in course {data[0][2]} for this semester"
         )
         return
 
-    # Registering the student
     instance.set(
         table="registration",
         keys="student_id, course_id, enrollment_semester",
-        values=f"('{student_id}', '{course_id}', '{enrollment_semester}')",
+        values=f"'{student_id}', '{course_id}', '{enrollment_semester}'",
     )
     print(
-        f"Student with student ID {student_id} successfully registered in course {course_id}"
+        f"\tStudent with student ID {student_id} successfully registered in course {course_id}"
     )
-
-
-def add_student(instance: utils.db.db):
-    # Adding student to the database
-    student_id = str(input("Enter student ID: \t"))
-    result = instance.get(table="student", where=f"student_id = {student_id}")
-    if result:
-        print("Student already exists")
-        return
-    else:
-        print("There is no student data, add one")
-
-    first_name, last_name, email = add_std_prompt()
-    instance.set(
-        table="student",
-        keys="student_id, first_name, last_name, email",
-        values=f"('{student_id}', '{first_name}', '{last_name}', '{email}')",
-    )
-    print("Student was added successfully")
 
 
 def search_student(instance: utils.db.db):
     # Search student by student ID
     std_id = std_id_prompt()
-    data = instance.get(table="student", where=f"id = {std_id}")
+    data = instance.get(table="student", where=f"id = '{std_id}'")
     if data is None or data.__len__() == 0:
         print(
             f"\tStudent having student ID {std_id} is not enrolled in the institution"
@@ -221,6 +203,25 @@ def search_student(instance: utils.db.db):
         {students}
         """
     )
+
+
+def add_student(instance: utils.db.db):
+    # Adding student to the database
+    student_id = str(input("\tEnter student ID: "))
+    result = instance.get(table="student", where=f"student_id = {student_id}")
+    if result:
+        print("\tStudent already exists")
+        return
+    else:
+        print("\tThere is no student data, add one")
+
+    first_name, last_name, email = add_std_prompt()
+    instance.set(
+        table="student",
+        keys="student_id, first_name, last_name, email",
+        values=f"'{student_id}', '{first_name}', '{last_name}', '{email}'",
+    )
+    print("\tStudent was added successfully")
 
 
 def gracefully_exit(instance: utils.db.db):

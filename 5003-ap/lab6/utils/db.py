@@ -1,4 +1,5 @@
 import atexit
+from time import sleep
 from mysql.connector import connect
 from dotenv import load_dotenv
 from pathlib import Path
@@ -23,7 +24,10 @@ class db:
             self.cursor = self.mydb.cursor(buffered=True)
             self.cursor.execute("USE ap5003")
         except Exception as e:
-            print(e)
+            print("\tError connecting to the database", "\n\tRetrying in 2 seconds...")
+            if "HY000" in str(e):
+                sleep(2)
+                self.connect()
 
     def disconnect(self) -> None:
         print("\n\n\n")
@@ -36,12 +40,12 @@ class db:
 
     def get(
         self,
-        table: str,
+        table: str = None,
         field: str = "*",
         where: str = None,
         sort: str = None,
         raw_query: str = None,
-    ) -> str:
+    ):
         if raw_query is not None:
             query = raw_query
         else:
@@ -59,8 +63,8 @@ class db:
             return None
         return data
 
-    def set(self, table: str, keys: str, value: str):
-        self.cursor.execute(f"INSERT INTO {table} {keys} VALUES ({value})")
+    def set(self, table: str, keys: str, values: str):
+        self.cursor.execute(f"INSERT INTO {table} ({keys}) VALUES ({values})")
         data = self.mydb.commit()
         return True
 
